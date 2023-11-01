@@ -1,0 +1,14 @@
+PLD P1 R1 // Initial number
+LDI R2 $1
+[loop] PST P1 R1
+AND R0 R1 R2
+BRC F3 V0 $[even]
+ADD R3 R1 R1 // Odd
+ADD R1 R3 R1
+ADD R1 R1 R2
+JMP P0 $[loop]
+[even] RSH R1 R1
+SUB R0 R1 R2
+BRC F2 V0 $[loop]
+PST P1 R1
+HLT

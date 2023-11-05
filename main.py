@@ -30,7 +30,11 @@ def draw_grid():
 draw_grid()
 
 
-def emulate(file_name):
+def emulate(file_name, debug=True, display=False):
+
+    if not display:
+        pygame.quit()
+
     global oncolor
     num_regs = 8
     num_flags = 4
@@ -87,6 +91,9 @@ def emulate(file_name):
         if instruction[0].startswith("["):
             labels[instruction[0]] = i
 
+    old_port_0 = ""
+    old_port_1 = ""
+
     while running:
 
         instruction = rom[pc]
@@ -103,9 +110,6 @@ def emulate(file_name):
         flag = ""
         label = ""
         immediate = ""
-
-        old_port_0 = portsO[0]
-        old_port_1 = portsO[1]
 
         for i in range(len(instruction)):
             if instruction[i].startswith("["):
@@ -155,10 +159,15 @@ def emulate(file_name):
                         print(f"Error at line {pc}: label does not exist")
                         exit()
                 elif instruction[i][1::].isdigit() or instruction[i][1] == "-" and instruction[i][2::].isdigit():
-                    if instruction[i][1] == "-":
-                        immediate = 255 - int(instruction[i][2::]) + 1
+                    if int(instruction[i][1::]) < 256 or int(instruction[i][1::]) > -257:
+                        if instruction[i][1] == "-":
+                            immediate = 255 - int(instruction[i][2::]) + 1
+                        else:
+                            immediate = int(instruction[i][1::])
                     else:
-                        immediate = int(instruction[i][1::])
+                        print(f"Error at line {pc}: immediate cannot be bigger than 255 or smaller than -256")
+                        print(int(instruction[i][1::]))
+                        exit()
                 else:
                     print(f"Error at line {pc}: invalid value after a $")
                     exit()
@@ -196,6 +205,8 @@ def emulate(file_name):
                     flags[1] = True
                 else:
                     flags[1] = False
+                if debug:
+                    print(f"{registers[regA]} - {registers[regB]} = {registers[regA] - registers[regB]}")
             case "and":
                 registers[regDest] = registers[regA] & registers[regB]
             case "or":
@@ -233,6 +244,8 @@ def emulate(file_name):
                 registers[regDest] = ram[registers[7]]
             case "pst":
                 portsO[port - 1] = registers[regDest]
+                if file == "fibonacci":
+                    print(portsO[0])
             case "pld":
                 registers[regDest] = int(input(f"Input for port {port}\n"))  # portsI[port - 1]
             case "brc":
@@ -242,7 +255,11 @@ def emulate(file_name):
                 else:
                     pc += 1
             case "jmp":
-                immediate = labels[label]
+                try:
+                    immediate = labels[label]
+                except:
+                    print(f"Error at line {pc}: syntax error on label")
+                    exit()
                 if pop == 0:
                     pc = immediate
                 else:
@@ -255,6 +272,9 @@ def emulate(file_name):
                 running = False
                 print("Execution ended")
                 exit()
+
+        if debug:
+            print(f"Cycles: {cycles}  PC: {pc}")
 
         if opcode.lower() not in ("brc", "jmp", "jal"):
             pc += 1
@@ -275,24 +295,29 @@ def emulate(file_name):
             else:
                 flags[3] = False
 
-        print(f"Cycles: {cycles}  PC: {pc}")
-
         '''if cycles > 1_000_000:
             running = False'''
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                print("Execution ended")
+        if display:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    print("Execution ended")
 
         if not portsO[1] == old_port_1 and file == "bouncing ball":
             draw_grid()
             draw_pixel((portsO[0], portsO[1]))
             pygame.display.flip()
 
+        if not portsO[0] == old_port_0 and file == "collatz":
+            print(portsO[0])
 
-file = "collatz"
+        old_port_0 = portsO[0]
+        old_port_1 = portsO[1]
 
-emulate(r"C:\Users\zPippo\Desktop\Incel2's emulator\programs\{}.txt".format(file))
+
+file = "fibonacci"
+
+emulate(r"C:\Users\zPippo\Desktop\Incel2's emulator\programs\{}.txt".format(file), False, False)
 
 pygame.quit()

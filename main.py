@@ -104,6 +104,7 @@ def emulate(file_name):
         label = ""
         immediate = ""
 
+        old_port_0 = portsO[0]
         old_port_1 = portsO[1]
 
         for i in range(len(instruction)):
@@ -177,8 +178,10 @@ def emulate(file_name):
             print(f"Error at line {pc}: too many registers")
             exit()
 
+        '''
         print(instruction)
         print(f"Opcode: {opcode}  regDest: {regDest}  regA: {regA}  regB: {regB}   port: {port}  flag: {flag}  value: {value}  label: {label}  immediate: {immediate}  pop: {pop}")
+        '''
 
         match opcode.lower():
             case "add":
@@ -272,7 +275,7 @@ def emulate(file_name):
             else:
                 flags[3] = False
 
-        # print(f"Cycles: {cycles}  PC: {pc}")
+        print(f"Cycles: {cycles}  PC: {pc}")
 
         '''if cycles > 1_000_000:
             running = False'''
@@ -282,15 +285,13 @@ def emulate(file_name):
                 running = False
                 print("Execution ended")
 
-        if not portsO[1] == old_port_1:
+        if not portsO[1] == old_port_1 and file == "bouncing ball":
             draw_grid()
             draw_pixel((portsO[0], portsO[1]))
+            pygame.display.flip()
 
-        pygame.display.flip()
 
-        sleep(0.01)
-
-file = "bouncing ball"
+file = "collatz"
 
 emulate(r"C:\Users\zPippo\Desktop\Incel2's emulator\programs\{}.txt".format(file))
 

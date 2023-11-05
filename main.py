@@ -1,4 +1,5 @@
 import pygame
+from time import sleep
 
 gridcolor = (76, 45, 28)
 offcolor = (173, 101, 62)
@@ -103,7 +104,7 @@ def emulate(file_name):
         label = ""
         immediate = ""
 
-        old_port_0 = portsO[0]
+        old_port_1 = portsO[1]
 
         for i in range(len(instruction)):
             if instruction[i].startswith("["):
@@ -176,10 +177,8 @@ def emulate(file_name):
             print(f"Error at line {pc}: too many registers")
             exit()
 
-        '''print(instruction)
-        print(
-            f"Opcode: {opcode}  regDest: {regDest}  regA: {regA}  regB: {regB}   port: {port}  flag: {flag}  value: {value}  label: {label}  immediate: {immediate}  pop: {pop}")
-        print(labels)'''
+        print(instruction)
+        print(f"Opcode: {opcode}  regDest: {regDest}  regA: {regA}  regB: {regB}   port: {port}  flag: {flag}  value: {value}  label: {label}  immediate: {immediate}  pop: {pop}")
 
         match opcode.lower():
             case "add":
@@ -274,7 +273,6 @@ def emulate(file_name):
                 flags[3] = False
 
         # print(f"Cycles: {cycles}  PC: {pc}")
-        print(portsO[0]) if not portsO[0] == old_port_0 else print(end="")
 
         '''if cycles > 1_000_000:
             running = False'''
@@ -284,12 +282,13 @@ def emulate(file_name):
                 running = False
                 print("Execution ended")
 
-        draw_grid()
-
-        draw_pixel((portsO[0], portsO[1]))
+        if not portsO[1] == old_port_1:
+            draw_grid()
+            draw_pixel((portsO[0], portsO[1]))
 
         pygame.display.flip()
 
+        sleep(0.01)
 
 file = "bouncing ball"
 

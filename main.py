@@ -171,7 +171,7 @@ def emulate(file_name, debug=True, display=False):
                 else:
                     print(f"Error at line {pc}: invalid value after a $")
                     exit()
-            elif instruction[i][:2:] == "//":
+            elif instruction[i][:2:] == "//" or instruction[i][0] == ">":
                 break
             else:
                 print(f"Error at line {pc}: unrecognized opcode/operand")
